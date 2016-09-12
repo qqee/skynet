@@ -232,13 +232,20 @@ function socket.close_fd(id)
 	driver.close(id)
 end
 
-function socket.close(id)
+--[[
+nolinger=1 will set socket SO_LINGER={1,0}
+eg:
+	socket.close(id)
+	or
+	socket.close(id, 1)
+]]
+function socket.close(id, nolinger)
 	local s = socket_pool[id]
 	if s == nil then
 		return
 	end
 	if s.connected then
-		driver.close(id)
+		driver.close(id, nolinger)
 		-- notice: call socket.close in __gc should be carefully,
 		-- because skynet.wait never return in __gc, so driver.clear may not be called
 		if s.co then

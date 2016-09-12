@@ -456,8 +456,12 @@ lconnect(lua_State *L) {
 static int
 lclose(lua_State *L) {
 	int id = luaL_checkinteger(L,1);
+	int nolinger=0;
+	if(lua_gettop(L)==2){
+		nolinger=(1==luaL_checkinteger(L,2))?1:0;
+	}
 	struct skynet_context * ctx = lua_touserdata(L, lua_upvalueindex(1));
-	skynet_socket_close(ctx, id);
+	skynet_socket_close(ctx, id, nolinger);
 	return 0;
 }
 

@@ -127,6 +127,7 @@ struct request_setudp {
 struct request_close {
 	int id;
 	int shutdown;
+	int nolinger;
 	uintptr_t opaque;
 };
 
@@ -240,6 +241,14 @@ static void
 socket_keepalive(int fd) {
 	int keepalive = 1;
 	setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&keepalive , sizeof(keepalive));  
+}
+
+static void
+socket_linger(int fd) {
+	struct linger li;
+	li.l_onoff = 1;
+	li.l_linger = 0;
+	setsockopt(fd, SOL_SOCKET, SO_LINGER, (void *)&li, sizeof(li));
 }
 
 static int
@@ -798,6 +807,7 @@ close_socket(struct socket_server *ss, struct request_close *request, struct soc
 			return type;
 	}
 	if (request->shutdown || send_buffer_empty(s)) {
+		if(1==request->nolinger)socket_linger(s->fd);
 		force_close(ss,s,result);
 		result->id = id;
 		result->opaque = request->opaque;
@@ -1375,11 +1385,12 @@ socket_server_exit(struct socket_server *ss) {
 }
 
 void
-socket_server_close(struct socket_server *ss, uintptr_t opaque, int id) {
+socket_server_close(struct socket_server *ss, uintptr_t opaque, int id, int nolinger) {
 	struct request_package request;
 	request.u.close.id = id;
 	request.u.close.shutdown = 0;
 	request.u.close.opaque = opaque;
+	request.u.close.nolinger = nolinger;
 	send_request(ss, &request, 'K', sizeof(request.u.close));
 }
 

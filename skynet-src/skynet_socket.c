@@ -154,9 +154,9 @@ skynet_socket_bind(struct skynet_context *ctx, int fd) {
 }
 
 void 
-skynet_socket_close(struct skynet_context *ctx, int id) {
+skynet_socket_close(struct skynet_context *ctx, int id, int nolinger) {
 	uint32_t source = skynet_context_handle(ctx);
-	socket_server_close(SOCKET_SERVER, source, id);
+	socket_server_close(SOCKET_SERVER, source, id, nolinger);
 }
 
 void 
