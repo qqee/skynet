@@ -237,7 +237,7 @@ nolinger=1 will set socket SO_LINGER={1,0}
 eg:
 	socket.close(id)
 	or
-	socket.close(id, 1)
+	socket.close(id, 1)  --will not FIN_WAIT/FIN_WAIT2
 ]]
 function socket.close(id, nolinger)
 	local s = socket_pool[id]
