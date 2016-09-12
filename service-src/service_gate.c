@@ -49,11 +49,11 @@ gate_release(struct gate *g) {
 	for (i=0;i<g->max_connection;i++) {
 		struct connection *c = &g->conn[i];
 		if (c->id >=0) {
-			skynet_socket_close(ctx, c->id);
+			skynet_socket_close(ctx, c->id, 0);
 		}
 	}
 	if (g->listen_id >= 0) {
-		skynet_socket_close(ctx, g->listen_id);
+		skynet_socket_close(ctx, g->listen_id, 0);
 	}
 	messagepool_free(&g->mp);
 	hashid_clear(&g->hash);
@@ -105,7 +105,7 @@ _ctrl(struct gate * g, const void * msg, int sz) {
 		int uid = strtol(command , NULL, 10);
 		int id = hashid_lookup(&g->hash, uid);
 		if (id>=0) {
-			skynet_socket_close(ctx, uid);
+			skynet_socket_close(ctx, uid, 0);
 		}
 		return;
 	}
@@ -142,7 +142,7 @@ _ctrl(struct gate * g, const void * msg, int sz) {
 	}
 	if (memcmp(command, "close", i) == 0) {
 		if (g->listen_id >= 0) {
-			skynet_socket_close(ctx, g->listen_id);
+			skynet_socket_close(ctx, g->listen_id, 0);
 			g->listen_id = -1;
 		}
 		return;
@@ -197,7 +197,7 @@ dispatch_message(struct gate *g, struct connection *c, int id, void * data, int 
 			if (size >= 0x1000000) {
 				struct skynet_context * ctx = g->ctx;
 				databuffer_clear(&c->buffer,&g->mp);
-				skynet_socket_close(ctx, id);
+				skynet_socket_close(ctx, id, 0);
 				skynet_error(ctx, "Recv socket message > 16M");
 				return;
 			} else {
@@ -219,7 +219,7 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
 			dispatch_message(g, c, message->id, message->buffer, message->ud);
 		} else {
 			skynet_error(ctx, "Drop unknown connection %d message", message->id);
-			skynet_socket_close(ctx, message->id);
+			skynet_socket_close(ctx, message->id, 0);
 			skynet_free(message->buffer);
 		}
 		break;
@@ -232,7 +232,7 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
 		int id = hashid_lookup(&g->hash, message->id);
 		if (id<0) {
 			skynet_error(ctx, "Close unknown connection %d", message->id);
-			skynet_socket_close(ctx, message->id);
+			skynet_socket_close(ctx, message->id, 0);
 		}
 		break;
 	}
@@ -252,7 +252,7 @@ dispatch_socket_message(struct gate *g, const struct skynet_socket_message * mes
 		// report accept, then it will be get a SKYNET_SOCKET_TYPE_CONNECT message
 		assert(g->listen_id == message->id);
 		if (hashid_full(&g->hash)) {
-			skynet_socket_close(ctx, message->ud);
+			skynet_socket_close(ctx, message->ud, 0);
 		} else {
 			struct connection *c = &g->conn[hashid_insert(&g->hash, message->ud)];
 			if (sz >= sizeof(c->remote_name)) {

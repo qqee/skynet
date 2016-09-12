@@ -25,7 +25,7 @@ void socket_server_release(struct socket_server *);
 int socket_server_poll(struct socket_server *, struct socket_message *result, int *more);
 
 void socket_server_exit(struct socket_server *);
-void socket_server_close(struct socket_server *, uintptr_t opaque, int id);
+void socket_server_close(struct socket_server *, uintptr_t opaque, int id, int nolinger);
 void socket_server_shutdown(struct socket_server *, uintptr_t opaque, int id);
 void socket_server_start(struct socket_server *, uintptr_t opaque, int id);
 

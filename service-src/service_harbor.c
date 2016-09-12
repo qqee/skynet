@@ -232,7 +232,7 @@ close_harbor(struct harbor *h, int id) {
 	struct slave *s = &h->s[id];
 	s->status = STATUS_DOWN;
 	if (s->fd) {
-		skynet_socket_close(h->ctx, s->fd);
+		skynet_socket_close(h->ctx, s->fd, 0);
 	}
 	if (s->queue) {
 		release_queue(s->queue);
